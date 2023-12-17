@@ -9,13 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
-*/
-
 public class Main {
 
     private static final Logger logger = Logger.getLogger(Main.class.getCanonicalName());
@@ -29,7 +22,7 @@ public class Main {
         File docroot;
 
         try {
-            docroot = new File("/home/komiz/Desktop/FINAL-CONCURRENTE/Servicio_Almacen/ServerHttp/dir");
+            docroot = new File("/home/komiz/Desktop/FINAL-CONCURRENTE/Cliente/ServerHttp/dir");
         } catch (ArrayIndexOutOfBoundsException ex) {
             System.out.println("Usage: java JHTTP docroot port");
             return;
@@ -37,9 +30,7 @@ public class Main {
 
         System.out.println("docroot: " + docroot);
         
-
-        int port = 8000;
-
+        int port = 8080;
         try {
             Main webserver = new Main(docroot, port);
             webserver.start();
@@ -78,27 +69,3 @@ public class Main {
 
     
 }
-/*
-
-c:
-  ejem
-     index.html
-     indexxx.html
-     dibujo.html
-     dj.jpg
-
------------------
- <!DOCTYPE html>
-<html>
-<body>
-
-<h1>aaaaa</h1>
-
-<p>dibujo.</p>
-<p><a href="www.gaf.cl"><img 
-src="di.jpg" ></a></p>
-</body>
-</html>
-
-
-*/

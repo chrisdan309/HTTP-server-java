@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package ServerHttp.Prueba;
 
 import java.io.File;
@@ -15,17 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
-*/
 
-/**
- *
- * @author winxp7
- */
 public class Main {
 
     private static final Logger logger = Logger.getLogger(Main.class.getCanonicalName());
@@ -35,15 +19,10 @@ public class Main {
     private final int port;
 
     public static void main(String[] args) {
-        // get the Document root
+
         File docroot;
-        //docroot = File("c:/ejem");
-        //docroot = File("C:\\ejem\\index.html");
 
         try {
-            //docroot = new File(args[0]);
-            //ocroot = File("c:\\ejem");
-            //docroot = new File("C:\\ejem\\index.html");
             docroot = new File("/home/komiz/Desktop/FINAL-CONCURRENTE/Servicio_Almacen/ServerHttp/dir");
         } catch (ArrayIndexOutOfBoundsException ex) {
             System.out.println("Usage: java JHTTP docroot port");
@@ -52,16 +31,7 @@ public class Main {
 
         System.out.println("docroot: " + docroot);
         
-        // set the port to listen on
         int port = 8000;
-        /*
-        try {
-            port = Integer.parseInt(args[1]);
-            if (port < 0 || port > 65535) port = 80;
-        } catch (RuntimeException ex) {
-            port = 80;
-        }
-        */
         try {
             Main webserver = new Main(docroot, port);
             webserver.start();
@@ -100,27 +70,3 @@ public class Main {
 
     
 }
-/*
-
-c:
-  ejem
-     index.html
-     indexxx.html
-     dibujo.html
-     dj.jpg
-
------------------
- <!DOCTYPE html>
-<html>
-<body>
-
-<h1>aaaaa</h1>
-
-<p>dibujo.</p>
-<p><a href="www.gaf.cl"><img 
-src="di.jpg" ></a></p>
-</body>
-</html>
-
-
-*/

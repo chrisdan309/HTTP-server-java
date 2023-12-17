@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package ServerHttp.Prueba;
 
 import java.io.*;
@@ -39,7 +33,6 @@ class RequestProcessor implements Runnable {
     
     @Override
     public void run() {
-        // for security checks
         String root = rootDirectory.getPath();
         try {
             OutputStream raw = new BufferedOutputStream(
@@ -59,14 +52,13 @@ class RequestProcessor implements Runnable {
                 requestLine.append(line).append("\r\n");
             }
             System.out.println(requestLine.toString());
-            // Get the first line from requestLine
+
             String get = requestLine.toString().split("\n")[0].trim();
             logger.info(connection.getRemoteSocketAddress() + " " + get);
             String[] tokens = get.split("\\s+");
             String method = tokens[0];
             String version = "";
             if (method.equals("GET")) {
-                // Check if fileName is "/" or "/create"
                 System.out.println("Entro al get");
                 String fileName = tokens[1];
                 String params = "";
@@ -225,17 +217,6 @@ class RequestProcessor implements Runnable {
                     raw.flush();
 
 
-/*
-
-                    byte[] theData = Files.readAllBytes(theFile.toPath());
-                    if (version.startsWith("HTTP/")) { // send a MIME header
-                        sendHeader(out, "HTTP/1.0 200 OK", contentType, theData.length);
-                    }
-                    // send the file; it may be an image or other binary data
-                    // so use the underlying output stream
-                    // instead of the writer
-                    raw.write(theData);
-                    raw.flush();*/
                 } else { // can't find the file
                     String body = new StringBuilder("<HTML>\r\n")
                     .append("<HEAD><TITLE>File Not Found</TITLE>\r\n")
@@ -252,9 +233,7 @@ class RequestProcessor implements Runnable {
                     raw.flush();
                 }
             } else if (method.equals("POST")) {
-                // Read the POST data
                 int contentLength = 0;
-                // Get content-length from requestline
                 String[] requestLines = requestLine.toString().split("\n");
                 for (String request : requestLines) {
                     if (request.startsWith("Content-Length:")) {
@@ -268,7 +247,7 @@ class RequestProcessor implements Runnable {
                 char[] postData = new char[contentLength];
                 int bytesRead = reader.read(postData, 0, contentLength);
                 System.out.println(bytesRead);
-                // char[] to String
+            
                 String postDataString = new String(postData);
                 System.out.println("Received POST data: " + new String(postData));
                 String[] paramsArray = postDataString.split("&");
@@ -370,9 +349,7 @@ class RequestProcessor implements Runnable {
 
 
             } else if (method.equals("PUT")) {
-                // Read the PUT data
                 int contentLength = 0;
-                // Get content-length from requestline
                 String[] requestLines = requestLine.toString().split("\n");
                 for (String request : requestLines) {
                     if (request.startsWith("Content-Length:")) {
@@ -385,7 +362,6 @@ class RequestProcessor implements Runnable {
                 char[] putData = new char[contentLength];
                 int bytesRead = reader.read(putData, 0, contentLength);
                 System.out.println(bytesRead);
-                // char[] to String
                 String putDataString = new String(putData);
                 System.out.println("Received PUT data: " + new String(putData));
                 String[] paramsArray = putDataString.split("&");
@@ -399,7 +375,7 @@ class RequestProcessor implements Runnable {
                 Producto producto = crud.updateProducto(idProducto, nameProducto, detailProducto, priceProducto, stockProducto);
                 System.out.println(producto);
 
-            } else { // method does not equal "GET"
+            } else {
                 String body = new StringBuilder("<HTML>\r\n")
                 .append("<HEAD><TITLE>Not Implemented</TITLE>\r\n")
                 .append("</HEAD>\r\n")

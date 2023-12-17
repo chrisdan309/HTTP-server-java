@@ -4,7 +4,6 @@
 4-Producto4-Detalle4-40-400
 5-Producto5-Detalle5-50-500
 6-Producto6-Detalle6-60-600
-7-Producto7-Detalle7-70-700
 8-Producto8-Detalle8-80-800
 9-Producto9-Detalle9-90-900
 10-Producto10-Detalle10-100-1000
@@ -98,3 +97,4 @@
 98-Producto98-Detalle98-980-9800
 99-Producto99-Detalle99-990-9900
 100-Producto100-Detalle100-1000-10000
+a-b-c-d-e

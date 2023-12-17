@@ -6,11 +6,8 @@ import java.net.URLConnection;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import ServerHttp.dao.CRUDVentas;
 import ServerHttp.dto.Producto;
-import ServerHttp.dao.CRUDProduct;
-import ServerHttp.dto.Venta;
+import ServerHttp.dao.CRUD;
 
 class RequestProcessor implements Runnable {
     private final static Logger logger = Logger.getLogger(
@@ -54,12 +51,14 @@ class RequestProcessor implements Runnable {
                 requestLine.append(line).append("\r\n");
             }
             System.out.println(requestLine.toString());
+            
             String get = requestLine.toString().split("\n")[0].trim();
             logger.info(connection.getRemoteSocketAddress() + " " + get);
             String[] tokens = get.split("\\s+");
             String method = tokens[0];
             String version = "";
             if (method.equals("GET")) {
+                
                 System.out.println("Entro al get");
                 String fileName = tokens[1];
                 String params = "";
@@ -75,8 +74,8 @@ class RequestProcessor implements Runnable {
                     params = params.split("\\.")[0];
                     String id = params.split("=")[1];
 
-                    CRUDProduct crudProduct = new CRUDProduct();
-                    crudProduct.deleteProducto(id);
+                    CRUD crud = new CRUD();
+                    crud.deleteProducto(id);
                     fileName = "/";
                 }
                 System.out.println(fileName);
@@ -95,38 +94,41 @@ class RequestProcessor implements Runnable {
                     if(params.contains("&")){
                         System.out.println("PUT params");
                         String[] paramsArray = params.split("&");
-                        String idVenta = paramsArray[0].split("=")[1];
-                        String RUC = paramsArray[1].split("=")[1];
-                        String name = paramsArray[2].split("=")[1];
-                        String costTotal = paramsArray[3].split("=")[1];
+                        String idProducto = paramsArray[0].split("=")[1];
+                        String nameProducto = paramsArray[1].split("=")[1];
+                        String detailProducto = paramsArray[2].split("=")[1];
+                        String priceProducto = paramsArray[3].split("=")[1];
+                        String stockProducto = paramsArray[4].split("=")[1];
 
-                        CRUDVentas crudVentas = new CRUDVentas();
-                        Venta venta = crudVentas.updateVenta(idVenta, RUC, name, costTotal);
-                        System.out.println(venta);
+                        CRUD crud = new CRUD();
+                        Producto producto = crud.updateProducto(idProducto, nameProducto, detailProducto, priceProducto, stockProducto);
+                        System.out.println(producto);
                         fileName = "/";
                         put = true;
                     }
 
                     if(!put){
-                        CRUDVentas crudVentas = new CRUDVentas();
-                        Venta venta = crudVentas.readVenta(id);
-                        System.out.println(venta);
+                        CRUD crud = new CRUD();
+                        Producto producto = crud.readProducto(id);
+                        System.out.println(producto);
 
                         StringBuilder body = new StringBuilder("<HTML>\r\n")
                                 .append("<HEAD><TITLE>index</TITLE>\r\n")
                                 .append("</HEAD>\r\n")
                                 .append("<BODY>")
                                 .append("<H1>Update</H1>\r\n")
-                                .append("<H2>Venta con id = "+id+"</H2>\r\n")
+                                .append("<H2>Producto con id = "+id+"</H2>\r\n")
                                 .append("<form action=\"/update\" method=\"POST\">\r\n")
                                 .append("<label for=\"id\">id:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"id\" name=\"id\" value=\""+venta.idVenta+"\"><br>\r\n")
-                                .append("<label for=\"RUC\">RUC:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"RUC\" name=\"RUC\" value=\""+venta.RUC+"\"><br>\r\n")
+                                .append("<input type=\"text\" id=\"id\" name=\"id\" value=\""+producto.idProducto+"\"><br>\r\n")
                                 .append("<label for=\"name\">name:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"name\" name=\"name\" value=\""+venta.name+"\"><br>\r\n")
-                                .append("<label for=\"cost\">cost:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"cost\" name=\"cost\" value=\""+venta.costTotal+"\"><br>\r\n")
+                                .append("<input type=\"text\" id=\"name\" name=\"name\" value=\""+producto.nameProducto+"\"><br>\r\n")
+                                .append("<label for=\"detail\">detail:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"detail\" name=\"detail\" value=\""+producto.detailProducto+"\"><br>\r\n")
+                                .append("<label for=\"price\">price:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"price\" name=\"price\" value=\""+producto.priceProducto+"\"><br>\r\n")
+                                .append("<label for=\"stock\">stock:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"stock\" name=\"stock\" value=\""+producto.stockProducto+"\"><br><br>\r\n")
                                 .append("<input type=\"submit\" value=\"Submit\">\r\n")
                                 .append("</form>\r\n")
                                 .append("</BODY></HTML>\r\n");
@@ -151,52 +153,30 @@ class RequestProcessor implements Runnable {
                 }
                 File theFile = new File(rootDirectory,fileName.substring(1, fileName.length()));
                 if (theFile.canRead()
+                
                 && theFile.getCanonicalPath().startsWith(root)) {
 
                     StringBuilder body = new StringBuilder("<HTML>\r\n")
                             .append("<HEAD><TITLE>index</TITLE>\r\n")
                             .append("</HEAD>\r\n")
                             .append("<BODY>")
-                            .append("<H1>Ventas</H1>\r\n")
-                            .append("<H2>Mostrar</H2>\r\n")
-                            .append("<table>\r\n")
-                            .append("<tr>\r\n")
-                            .append("<th>id</th>\r\n")
-                            .append("<th>RUC</th>\r\n")
-                            .append("<th>name</th>\r\n")
-                            .append("<th>Costo total</th>\r\n")
-                            .append("</tr>\r\n")
-                            .append("<tr>\r\n");
-                    try {
-                        FileReader fr = new FileReader("ServerHttp/database/baseDatosVenta.txt");
-                        BufferedReader br = new BufferedReader(fr);
-                        String line2;
-                        while ((line2 = br.readLine()) != null) {
-                            String[] data = line2.split("-");
-                            body.append("<td>").append(data[0]).append("</td>\r\n")
-                                    .append("<td>").append(data[1]).append("</td>\r\n")
-                                    .append("<td>").append(data[2]).append("</td>\r\n")
-                                    .append("<td>").append(data[3]).append("</td>\r\n")
-                                    .append("<td><button type=\"button\" onclick=\"location.href='/update?id="+data[0]+"'\">Update</button></td>\r\n")
-                                    .append("<td><button type=\"button\" onclick=\"location.href='/delete?id="+data[0]+"'\">Delete</button></td>\r\n")
-                                    .append("</tr>\r\n");
-                        }
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                            .append("<H1>Cliente</H1>\r\n")
+                            .append("<H2>Generete Data</H2>\r\n");
+
 
                         String bodyStr = body.append("</table>\r\n")
                                 .append("<H2>Create</H2>\r\n")
                                 .append("<form action=\"/create\" method=\"POST\">\r\n")
                                 .append("<label for=\"id\">id:</label><br>\r\n")
                                 .append("<input type=\"text\" id=\"id\" name=\"id\"><br>\r\n")
-                                .append("<label for=\"RUC\">RUC:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"RUC\" name=\"RUC\"><br>\r\n")
                                 .append("<label for=\"name\">name:</label><br>\r\n")
                                 .append("<input type=\"text\" id=\"name\" name=\"name\"><br>\r\n")
-                                .append("<label for=\"cost\">cost:</label><br>\r\n")
-                                .append("<input type=\"text\" id=\"cost\" name=\"cost\"><br>\r\n")
+                                .append("<label for=\"detail\">detail:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"detail\" name=\"detail\"><br>\r\n")
+                                .append("<label for=\"price\">price:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"price\" name=\"price\"><br>\r\n")
+                                .append("<label for=\"stock\">stock:</label><br>\r\n")
+                                .append("<input type=\"text\" id=\"stock\" name=\"stock\"><br><br>\r\n")
                                 .append("<input type=\"submit\" value=\"Submit\">\r\n")
                                 .append("</form>\r\n")
                             .append("</BODY></HTML>\r\n").toString();
@@ -224,7 +204,10 @@ class RequestProcessor implements Runnable {
                     raw.flush();
                 }
             } else if (method.equals("POST")) {
+                String[] aux = CONSENSO.sha1WithDifficulty("Algoritmo de Consenso", 4);
+                // Read the POST data
                 int contentLength = 0;
+                // Get content-length from requestline
                 String[] requestLines = requestLine.toString().split("\n");
                 for (String request : requestLines) {
                     if (request.startsWith("Content-Length:")) {
@@ -238,23 +221,29 @@ class RequestProcessor implements Runnable {
                 char[] postData = new char[contentLength];
                 int bytesRead = reader.read(postData, 0, contentLength);
                 System.out.println(bytesRead);
+                // char[] to String
                 String postDataString = new String(postData);
                 System.out.println("Received POST data: " + new String(postData));
                 String[] paramsArray = postDataString.split("&");
-                String idVenta = paramsArray[0].split("=")[1];
-                String RUC = paramsArray[1].split("=")[1];
-                String name = paramsArray[2].split("=")[1];
-                String costTotal = paramsArray[3].split("=")[1];
+                String idProducto = paramsArray[0].split("=")[1];
+                String nameProducto = paramsArray[1].split("=")[1];
+                String detailProducto = paramsArray[2].split("=")[1];
+                String priceProducto = paramsArray[3].split("=")[1];
+                String stockProducto = paramsArray[4].split("=")[1];
 
-                CRUDVentas crudVentas = new CRUDVentas();
-                Venta venta;
+                CRUD crud = new CRUD();
+                Producto producto;
                 if(requestLine.toString().contains(("update"))){
-                    venta = crudVentas.updateVenta(idVenta, RUC, name, costTotal);
-                    System.out.println(venta);
+                    producto = crud.updateProducto(idProducto, nameProducto, detailProducto, priceProducto, stockProducto);
+                    System.out.println(producto);
                 } else if (requestLine.toString().contains(("create"))) {
-                    venta = crudVentas.createVenta(idVenta, RUC, name, costTotal);
-                    System.out.println(venta);
+                    producto = crud.createProducto(idProducto, nameProducto, detailProducto, priceProducto, stockProducto);
+                    System.out.println(producto);
                 }
+
+
+
+
 
                 String fileName = "/index.html";
                 String contentType =
@@ -264,24 +253,31 @@ class RequestProcessor implements Runnable {
                 }
                 File theFile = new File(rootDirectory,fileName.substring(1, fileName.length()));
                 if (theFile.canRead()
+                        // Don't let clients outside the document root
                         && theFile.getCanonicalPath().startsWith(root)) {
+
+
+
+
 
                     StringBuilder body = new StringBuilder("<HTML>\r\n")
                             .append("<HEAD><TITLE>index</TITLE>\r\n")
                             .append("</HEAD>\r\n")
                             .append("<BODY>")
-                            .append("<H1>Ventas</H1>\r\n")
+                            .append("<H1>Almacen desde cliente</H1>\r\n")
                             .append("<H2>Mostrar</H2>\r\n")
                             .append("<table>\r\n")
                             .append("<tr>\r\n")
                             .append("<th>id</th>\r\n")
-                            .append("<th>RUC</th>\r\n")
                             .append("<th>name</th>\r\n")
-                            .append("<th>Costo total</th>\r\n")
+                            .append("<th>detail</th>\r\n")
+                            .append("<th>price</th>\r\n")
+                            .append("<th>stock</th>\r\n")
                             .append("</tr>\r\n")
                             .append("<tr>\r\n");
+                    // leer baseDatosAlmacen.txt
                     try {
-                        FileReader fr = new FileReader("ServerHttp/database/baseDatosVenta.txt");
+                        FileReader fr = new FileReader("ServerHttp/database/baseDatosAlmacen.txt");
                         BufferedReader br = new BufferedReader(fr);
                         String line2;
                         while ((line2 = br.readLine()) != null) {
@@ -290,6 +286,7 @@ class RequestProcessor implements Runnable {
                                     .append("<td>").append(data[1]).append("</td>\r\n")
                                     .append("<td>").append(data[2]).append("</td>\r\n")
                                     .append("<td>").append(data[3]).append("</td>\r\n")
+                                    .append("<td>").append(data[4]).append("</td>\r\n")
                                     .append("<td><button type=\"button\" onclick=\"location.href='/update?id="+data[0]+"'\">Update</button></td>\r\n")
                                     .append("<td><button type=\"button\" onclick=\"location.href='/delete?id="+data[0]+"'\">Delete</button></td>\r\n")
                                     .append("</tr>\r\n");
@@ -304,12 +301,14 @@ class RequestProcessor implements Runnable {
                             .append("<form action=\"/create\" method=\"POST\">\r\n")
                             .append("<label for=\"id\">id:</label><br>\r\n")
                             .append("<input type=\"text\" id=\"id\" name=\"id\"><br>\r\n")
-                            .append("<label for=\"RUC\">RUC:</label><br>\r\n")
-                            .append("<input type=\"text\" id=\"RUC\" name=\"RUC\"><br>\r\n")
                             .append("<label for=\"name\">name:</label><br>\r\n")
                             .append("<input type=\"text\" id=\"name\" name=\"name\"><br>\r\n")
-                            .append("<label for=\"cost\">cost:</label><br>\r\n")
-                            .append("<input type=\"text\" id=\"cost\" name=\"cost\"><br>\r\n")
+                            .append("<label for=\"detail\">detail:</label><br>\r\n")
+                            .append("<input type=\"text\" id=\"detail\" name=\"detail\"><br>\r\n")
+                            .append("<label for=\"price\">price:</label><br>\r\n")
+                            .append("<input type=\"text\" id=\"price\" name=\"price\"><br>\r\n")
+                            .append("<label for=\"stock\">stock:</label><br>\r\n")
+                            .append("<input type=\"text\" id=\"stock\" name=\"stock\"><br><br>\r\n")
                             .append("<input type=\"submit\" value=\"Submit\">\r\n")
                             .append("</form>\r\n")
                             .append("</BODY></HTML>\r\n").toString();
@@ -324,7 +323,9 @@ class RequestProcessor implements Runnable {
 
 
             } else if (method.equals("PUT")) {
+                // Read the PUT data
                 int contentLength = 0;
+                // Get content-length from requestline
                 String[] requestLines = requestLine.toString().split("\n");
                 for (String request : requestLines) {
                     if (request.startsWith("Content-Length:")) {
@@ -341,16 +342,17 @@ class RequestProcessor implements Runnable {
                 String putDataString = new String(putData);
                 System.out.println("Received PUT data: " + new String(putData));
                 String[] paramsArray = putDataString.split("&");
-                String idVenta = paramsArray[0].split("=")[1];
-                String RUC = paramsArray[1].split("=")[1];
-                String name = paramsArray[2].split("=")[1];
-                String costTotal = paramsArray[3].split("=")[1];
+                String idProducto = paramsArray[0].split("=")[1];
+                String nameProducto = paramsArray[1].split("=")[1];
+                String detailProducto = paramsArray[2].split("=")[1];
+                String priceProducto = paramsArray[3].split("=")[1];
+                String stockProducto = paramsArray[4].split("=")[1];
 
-                CRUDVentas crudVentas = new CRUDVentas();
-                Venta venta = crudVentas.updateVenta(idVenta, RUC, name, costTotal);
-                System.out.println(venta);
+                CRUD crud = new CRUD();
+                Producto producto = crud.updateProducto(idProducto, nameProducto, detailProducto, priceProducto, stockProducto);
+                System.out.println(producto);
 
-            } else {
+            } else { // method does not equal "GET"
                 String body = new StringBuilder("<HTML>\r\n")
                 .append("<HEAD><TITLE>Not Implemented</TITLE>\r\n")
                 .append("</HEAD>\r\n")
